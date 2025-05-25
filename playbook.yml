@@ -1,0 +1,19 @@
+---
+# Need to create a task to install the required packages
+# and then run the playbook to install the packages
+- name: Sigma5+ lab setup
+  hosts: inventory
+  become: yes
+  remote_user: scadmin 
+  tasks:
+    - name: Install required packages
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        name:
+          - python3-pip
+          - python3-venv
+          - python3-dev
+          - build-essential
+          - iperf3
+        state: present
