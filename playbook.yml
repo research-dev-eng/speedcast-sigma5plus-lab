@@ -3,19 +3,16 @@
 # and then run the playbook to install the packages
 - name: Sigma5+ lab setup
   hosts: iperfs
-  gather_facts: no
-  become: yes
-  # remote_user: scadmin 
+  remote_user: ansible
+  become: true
 
   tasks:
-   # - name: Install required packages
-    #  apt:
-     #   update_cache: yes
-      #  cache_valid_time: 3600
-       # name:
-        #  - iperf3
-         # - python3-pip
-        # state: present
-    - name: test
-      ping:
-        data: "pong"
+    - name: Install required packages
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        name:
+          - iperf3
+          - python3-pip
+        state: present
+    
