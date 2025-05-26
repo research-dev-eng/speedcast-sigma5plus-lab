@@ -2,16 +2,20 @@
 # Need to create a task to install the required packages
 # and then run the playbook to install the packages
 - name: Sigma5+ lab setup
-  hosts: inventory
+  hosts: iperfs
+  gather_facts: no
   become: yes
   remote_user: scadmin 
 
   tasks:
-    - name: Install required packages
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
-        name:
-          - iperf3
-          - python3-pip
-        state: present
+   # - name: Install required packages
+    #  apt:
+     #   update_cache: yes
+      #  cache_valid_time: 3600
+       # name:
+        #  - iperf3
+         # - python3-pip
+        # state: present
+    - name: test
+      ping:
+        data: "pong"
