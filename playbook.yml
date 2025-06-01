@@ -6,14 +6,14 @@
   become: True
 
   vars:
-    iperf_script_dir: "/etc/telegraf/telegraf.conf.d/"
     iperf_script_tcp: "iperf3-tcp-conf.sh"
     iperf_script_udp: "iperf3-udp-conf.sh"
+    iperf_script_dir: "/etc/telegraf/telegraf.conf.d"
     iperf_script_tcp_path: "{{ iperf_script_dir }}/{{ iperf_script_tcp }}"
-    iperf_script_udp_path: "{{ iperf_script_dir }}/{{ iperf_script_udp }}" 
-    iperf_remote_ip: 192.168.1.7
-    iperf_bw: 1G
-    iperf_time: 60s
+    iperf_script_udp_path: "{{ iperf_script_dir }}/{{ iperf_script_udp }}"
+    iperf_remote_ip: "192.168.1.7"
+    iperf_bw: "1G"
+    iperf_time: "60s"
 
   tasks:
     - name: Create scadmin user
