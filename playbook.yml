@@ -11,11 +11,20 @@
     iperf_script_udp: "iperf3-udp-conf.sh"
     iperf_script_tcp_path: "{{ iperf_script_dir }}/{{ iperf_script_tcp }}"
     iperf_script_udp_path: "{{ iperf_script_dir }}/{{ iperf_script_udp }}" 
-    iperf_remote_ip: 192.168.1.9
+    iperf_remote_ip: 192.168.1.7
     iperf_bw: 1G
     iperf_time: 60s
 
   tasks:
+    - name: Create scadmin user
+      user:
+        name: scadmin
+        state: present
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        password: "{{ 'scadmin_password' | password_hash('sha512') }}"
+
     - name: Install required packages
       apt:
         update_cache: yes
@@ -46,19 +55,84 @@
         content: |
           #!/bin/bash
           iperf3 -u -c {{ iperf_remote_ip }} -t {{ iperf_time }} -b {{ iperf_bw }} -p 5202 -J
-    
-    - name: Make iperf3 scripts executable
-      file:
 
+    - name: Create systemd service for iperf3 TCP
+      copy:
+        dest: /etc/systemd/system/iperf3-tcp.service
+        content: |
+          [Unit]
+          Description=iperf3 TCP Service
+          After=network.target
 
+          [Service]
+          Type=simple
+          ExecStart=/usr/bin/iperf3 -s -p 5201
+          Restart=always
 
-    handlers:
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Create systemd service for iperf3 UDP
+      copy:
+        dest: /etc/systemd/system/iperf3-udp.service
+        content: |
+          [Unit]
+          Description=iperf3 UDP Service
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/bin/iperf3 -s -u -p 5202
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+  handlers:
     - name: Restart Telegraf
       service:
         name: telegraf
+        state: restarted
+    - name: Restart Grafana
+      service:
+        name: grafana-server
+        state: restarted
+    - name: Restart Prometheus
+      service:
+        name: prometheus
         state: restarted
 
 - name: Grafana/prometheus setup
   hosts: monitors  # This playbook is for setting up Grafana and Prometheus
   become: True
+
+  vars:
+  tasks:
+    - name: Create scadmin user
+      user:
+        name: scadmin
+        state: present
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        password: "{{ 'scadmin_password' | password_hash('sha512') }}"
+
+    - name: Install Grafana
+      apt:
+        name: grafana
+        state: present
+      notify: Restart Grafana
+
+    - name: Install Prometheus
+      apt:
+        name: prometheus
+        state: present
+      notify: Restart Prometheus
+
+    - name: Insert telegraf IP address into prometheus.yml
+      lineinfile:
+        path: /etc/prometheus/prometheus.yml
+        insertafter: '^  - job_name: "telegraf-iperf"'
+        line: '    static_configs:\n      - targets: ["192.168.1.9:9273"]\n -targets: ["192.168.1.9:9274"]\n -targets: ["192.168.1.9:9275"]'
+      notify: Restart Telegraf
          

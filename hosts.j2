@@ -1,0 +1,7 @@
+# This jinja2 template generates a hosts file for a system.
+{% for group, hosts in groups.items() %}
+[{{ group }}]
+{% for host in hosts %}
+{{ host }} ansible_host={{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+{% endfor %}
