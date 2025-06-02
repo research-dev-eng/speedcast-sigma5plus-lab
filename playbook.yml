@@ -158,25 +158,47 @@
         append: yes
         password: "{{ 'scadmin_password' | password_hash('sha512') }}"
 
-    - name: Install Grafana
+     - name: Install required APT packages for Grafana repo
       apt:
-        name: grafana
+        name:
+          - apt-transport-https
+          - software-properties-common
+          - wget
         state: present
-      notify: Restart Grafana
+        update_cache: yes
 
-    - name: Add Grafana APT GPG key
-      apt_key:
-        url: https://apt.grafana.com/gpg.key
-        state: present
+    - name: Ensure /etc/apt/keyrings directory exists
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download and install Grafana GPG key
+      shell: |
+        wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | tee /etc/apt/keyrings/grafana.gpg > /dev/null
+      args:
+        creates: /etc/apt/keyrings/grafana.gpg
 
     - name: Add Grafana APT repository
-      apt_repository:
-        repo: "deb https://apt.grafana.com stable main"
-        state: present
+      copy:
+        dest: /etc/apt/sources.list.d/grafana.list
+        content: |
+          deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main
 
     - name: Update apt cache after adding Grafana repo
       apt:
         update_cache: yes
+
+    - name: Install Grafana Enterprise
+      apt:
+        name: grafana-enterprise
+        state: present
+      notify: Restart Grafana
+
+    - name: Install Prometheus
+      apt:
+        name: prometheus
+        state: present
 
     - name: Insert telegraf IP address into prometheus.yml
       blockinfile:
