@@ -164,10 +164,19 @@
         state: present
       notify: Restart Grafana
 
-    - name: Install Prometheus
-      apt:
-        name: prometheus
+    - name: Add Grafana APT GPG key
+      apt_key:
+        url: https://apt.grafana.com/gpg.key
         state: present
+
+    - name: Add Grafana APT repository
+      apt_repository:
+        repo: "deb https://apt.grafana.com stable main"
+        state: present
+
+    - name: Update apt cache after adding Grafana repo
+      apt:
+        update_cache: yes
 
     - name: Insert telegraf IP address into prometheus.yml
       blockinfile:
