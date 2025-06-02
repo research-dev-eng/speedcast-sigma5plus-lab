@@ -61,8 +61,7 @@
         cache_valid_time: 3600
         name: telegraf
         state: present
-        enabled: yes
-      notify: Restart Telegraf 
+      notify: Restart Telegraf
 
     - name: Ensure Telegraf service is enabled and started
       systemd:
