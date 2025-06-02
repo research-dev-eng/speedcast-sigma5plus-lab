@@ -162,13 +162,11 @@
       apt:
         name: grafana
         state: present
-        enabled: yes
       notify: Restart Grafana
 
     - name: Install Prometheus
       apt:
         name: prometheus
-        enabled: yes
         state: present
 
     - name: Insert telegraf IP address into prometheus.yml
