@@ -158,7 +158,7 @@
         append: yes
         password: "{{ 'scadmin_password' | password_hash('sha512') }}"
 
-     - name: Install required APT packages for Grafana repo
+    - name: Install required APT packages for Grafana repo
       apt:
         name:
           - apt-transport-https
