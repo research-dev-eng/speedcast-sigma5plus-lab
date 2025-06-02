@@ -44,8 +44,6 @@
     - name: Verify InfluxData GPG key checksum
       shell: |
         echo "943666881a1b8d9b849b74caebf02d3465d6beb716510d86a39f6c8e8dac7515  /tmp/influxdata-archive.key" | sha256sum -c -
-      args:
-        warn: false
       
     - name: Convert GPG key to dearmored format
       shell: |
