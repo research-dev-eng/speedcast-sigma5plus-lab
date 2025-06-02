@@ -1,0 +1,15 @@
+[Unit]
+Description=iperf3 TCP Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/iperf3 -s -p 5201
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+KillMode=process
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
