@@ -48,8 +48,6 @@
     - name: Convert GPG key to dearmored format
       shell: |
         cat /tmp/influxdata-archive.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/influxdata-archive.gpg > /dev/null
-      args:
-        warn: false
 
     - name: Add InfluxData repository
       copy:
