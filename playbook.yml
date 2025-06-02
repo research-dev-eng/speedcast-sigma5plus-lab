@@ -4,11 +4,12 @@
 - name: Sigma5+ lab setup
   hosts: iperfs  # This playbook is for setting up the Sigma5+ lab environment
   become: True
+  tags: iperfs
 
   vars:
+    iperf_script_dir: "/etc/telegraf/telegraf.conf.d"
     iperf_script_tcp: "iperf3-tcp-conf.sh"
     iperf_script_udp: "iperf3-udp-conf.sh"
-    iperf_script_dir: "/etc/telegraf/telegraf.conf.d"
     iperf_script_tcp_path: "{{ iperf_script_dir }}/{{ iperf_script_tcp }}"
     iperf_script_udp_path: "{{ iperf_script_dir }}/{{ iperf_script_udp }}"
     iperf_remote_ip: "192.168.1.7"
@@ -47,7 +48,8 @@
         dest: "{{ iperf_script_tcp_path }}"
         content: |
           #!/bin/bash
-          iperf3 -c {{ iperf_remote_ip }} -t {{ iperf_time }} -b {{ iperf_bw }} -p 5201 -J 
+          iperf3 -c {{ iperf_remote_ip }} -t {{ iperf_time }} -b {{ iperf_bw }} -p 5201 -J
+        mode: '0755'
 
     - name: Copy iperf3 UDP configuration script
       copy:
@@ -55,6 +57,7 @@
         content: |
           #!/bin/bash
           iperf3 -u -c {{ iperf_remote_ip }} -t {{ iperf_time }} -b {{ iperf_bw }} -p 5202 -J
+        mode: '0755'
 
     - name: Create systemd service for iperf3 TCP
       copy:
@@ -105,6 +108,7 @@
 - name: Grafana/prometheus setup
   hosts: monitors  # This playbook is for setting up Grafana and Prometheus
   become: True
+  tags: monitors
 
   vars:
   tasks:
