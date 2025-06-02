@@ -35,6 +35,13 @@
           - python3-pip
           - telegraf
         state: present
+      
+    
+    - name: Ensure Telegraf service is enabled and started
+      systemd:
+        name: telegraf
+        state: started
+        enabled: yes
       notify: Restart Telegraf
 
     - name: Create directory for Telegraf configuration scripts
@@ -60,46 +67,48 @@
         mode: '0755'
 
     - name: Create systemd service for iperf3 TCP
-      copy:
+      template:
+        src: templates/iperf3-tcp.service.j2
         dest: /etc/systemd/system/iperf3-tcp.service
-        content: |
-          [Unit]
-          Description=iperf3 TCP Service
-          After=network.target
-
-          [Service]
-          Type=simple
-          ExecStart=/usr/bin/iperf3 -s -p 5201
-          Restart=always
-
-          [Install]
-          WantedBy=multi-user.target
+        mode: '0644'
+      notify: Reload systemd daemon
 
     - name: Create systemd service for iperf3 UDP
-      copy:
+      template:
+        src: templates/iperf3-udp.service.j2
         dest: /etc/systemd/system/iperf3-udp.service
-        content: |
-          [Unit]
-          Description=iperf3 UDP Service
-          After=network.target
+        mode: '0644'
+      notify: Reload systemd daemon
 
-          [Service]
-          Type=simple
-          ExecStart=/usr/bin/iperf3 -s -u -p 5202
-          Restart=always
+    - name: Enable and start iperf3 TCP service
+      systemd:
+        name: iperf3-tcp
+        state: started
+        enabled: yes
+        daemon_reload: yes
 
-          [Install]
-          WantedBy=multi-user.target
+    - name: Enable and start iperf3 UDP service
+      systemd:
+        name: iperf3-udp
+        state: started
+        enabled: yes
+        daemon_reload: yes
 
   handlers:
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
     - name: Restart Telegraf
       service:
         name: telegraf
         state: restarted
+
     - name: Restart Grafana
       service:
         name: grafana-server
         state: restarted
+
     - name: Restart Prometheus
       service:
         name: prometheus
@@ -110,7 +119,6 @@
   become: True
   tags: monitors
 
-  vars:
   tasks:
     - name: Create scadmin user
       user:
@@ -134,9 +142,12 @@
       notify: Restart Prometheus
 
     - name: Insert telegraf IP address into prometheus.yml
-      lineinfile:
+      blockinfile:
         path: /etc/prometheus/prometheus.yml
         insertafter: '^  - job_name: "telegraf-iperf"'
-        line: '    static_configs:\n      - targets: ["192.168.1.9:9273"]\n -targets: ["192.168.1.9:9274"]\n -targets: ["192.168.1.9:9275"]'
+        block: |
+          static_configs:
+            - targets: ["192.168.1.9:9273"]
+            - targets: ["192.168.1.9:9274"]
+            - targets: ["192.168.1.9:9275"]
       notify: Restart Telegraf
-         
