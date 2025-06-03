@@ -228,8 +228,13 @@
       apt:
         name: grafana-enterprise
         state: present
-        start: yes
       notify: Restart Grafana
+
+    - name: Ensure Grafana service is enabled and started
+      systemd:
+        name: grafana-server
+        enabled: yes
+        state: started
 
     - name: Install Prometheus
       apt:
