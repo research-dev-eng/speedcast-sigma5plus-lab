@@ -178,7 +178,7 @@
         name: prometheus
         state: restarted
 
-- name: Grafana/prometheus setup
+- name: Configuring monitors
   hosts: monitors  # This playbook is for setting up Grafana and Prometheus
   become: True
   tags: monitors
@@ -193,6 +193,11 @@
         append: yes
         password: "{{ 'scadmin_password' | password_hash('sha512') }}"
 
+- name: Configuring prometheus/grafana iperf-server
+  hosts: prometheus-grafana-server
+  become: True
+  tags: prometheus-grafana-server
+  tasks:
     - name: Install required APT packages for Grafana repo
       apt:
         name:
