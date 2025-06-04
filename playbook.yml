@@ -192,7 +192,7 @@
       systemd:
         daemon_reload: yes
 
-    - name: Restart Telegraf
+    - name: Restart telegraf
       service:
         name: telegraf
         state: restarted
