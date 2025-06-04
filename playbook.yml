@@ -92,24 +92,42 @@
       apt:
         name: telegraf
         state: present
-      notify: Restart Telegraf
 
     - name: Ensure Telegraf service is enabled and started
       systemd:
         name: telegraf
         state: started
         enabled: yes
-      notify: Restart Telegraf
 
-    - name: Insert telegraf IP address into prometheus.yml
+    - name: Insert Telegraf exec input and Prometheus output into telegraf.conf
       blockinfile:
         path: "/etc/telegraf/telegraf.conf"
-        insertafter: '^  - job_name: "telegraf-iperf"'
+        insertafter: '# write_timeout = "10"'
+        create: yes
         block: |
-          static_configs:
-            - targets: ["192.168.1.9:9273"]
-            - targets: ["192.168.1.9:9274"]
-            - targets: ["192.168.1.9:9275"]
+          [[inputs.exec]]
+            commands = [
+              "{{ iperf_script_tcp_path }}"
+            ]
+            interval = "60s"
+            timeout = "60s"
+            data_format = "json"
+            json_query = "end"
+            name_override = "iperf3_tcp"
+
+          [[inputs.exec]]
+            commands = [
+              "{{ iperf_script_udp_path }}"
+            ]
+            interval = "60s"
+            timeout = "60s"
+            data_format = "json"
+            json_query = "end"
+            name_override = "iperf3_udp"
+
+          [[outputs.prometheus_client]]
+            listen = ":9273"
+            # Add more listen ports if needed          
       notify: Restart telegraf
 
     - name: Create directory for Telegraf configuration scripts
