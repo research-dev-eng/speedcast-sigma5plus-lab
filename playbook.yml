@@ -101,6 +101,17 @@
         enabled: yes
       notify: Restart Telegraf
 
+    - name: Insert telegraf IP address into prometheus.yml
+      blockinfile:
+        path: "/etc/telegraf/telegraf.conf"
+        insertafter: '^  - job_name: "telegraf-iperf"'
+        block: |
+          static_configs:
+            - targets: ["192.168.1.9:9273"]
+            - targets: ["192.168.1.9:9274"]
+            - targets: ["192.168.1.9:9275"]
+      notify: Restart telegraf
+
     - name: Create directory for Telegraf configuration scripts
       file:
         path: "/etc/telegraf/telegraf.conf.d/"
